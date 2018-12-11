@@ -29,8 +29,14 @@ public class Main {
 		k2 = new BigInteger(key2.substring(2),16);
 		System.out.println("k1 < k2 : "+k1.compareTo(k2));
 		
+		key2 = "0x9c1f03a0d9cf510f2765bd0f226ff5db"; // pareil que key1 sauf la derniere lettre, b < c 
+		//donc key1 > key2 donc compare to renvoie 1
+		k2 = new BigInteger(key2.substring(2),16);
+		System.out.println("k1 > k2 : "+k1.compareTo(k2));
+		
+		BigInteger k1hex = new BigInteger(k1.toString(),10);
+		System.out.println("hey valeur de k1 : "+k1+" string de k1 : "+key1+" base 10 "+k1hex);
 		// Récupération de toute les lignes du fichier.
-	    
 		BufferedReader reader = null;
 
 		try {
@@ -51,9 +57,6 @@ public class Main {
 		        e.printStackTrace();
 		    }
 		}
-	    
-	    
-	    
 	    
 	}
 
