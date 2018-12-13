@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class TasArray {
-	private int currentSize = 1;
+	private int currentSize = 1; // je commence a 1 dans le tableau c'est + efficace pour les calcul d'indice des fils, a retenir pour tout le reste du code
 	private int capacity;
 	private BigInteger[] elements;
 	
@@ -34,6 +34,7 @@ public class TasArray {
 		
 	}
 	
+	//tas dynamique donc je double a chaque fois qu'on a atteins la capacité max.
 	@SuppressWarnings("unchecked")
 	private void doubleCapacity() {
 		capacity*=2;
@@ -44,7 +45,7 @@ public class TasArray {
 		elements = newElts;
 	}
 	
-
+	//j'insère bètement a la fin, et je lance percolate up pour maintenir la propriété de tas min.
 	public void insert(BigInteger el) {
 		if(currentSize == capacity)
 			doubleCapacity();
@@ -53,6 +54,7 @@ public class TasArray {
 		currentSize++;
 	}
 	
+	//idem tasmintree
 	public void percolate_up() {
 		BigInteger el = elements[currentSize];
 		int placeEl = currentSize;
@@ -64,36 +66,36 @@ public class TasArray {
 		}
 	}
 
-	public void percolate_down() {
-		int placeEl  = 1;
-		int leftson  = placeEl*2;
+	//idem tasmintreee
+	private void percolate_down(int currentId) {
+		int imax = currentId;
+		int leftson = currentId*2;
 		int rightson = leftson+1;
-		while((elements[placeEl].compareTo(elements[leftson]) == 1 || elements[placeEl].compareTo(elements[rightson]) == 1) && leftson < this.currentSize) {
-			BigInteger son;
-			int idson;
-			if(elements[leftson].compareTo(elements[rightson])>=0) {
-				son = elements[rightson];
-				idson = rightson;
-			}
-				
-			else {
-				son = elements[leftson];
-				idson = leftson;
-			}
-			elements[idson] = elements[placeEl];
-			elements[placeEl] = son;
-			placeEl = idson;
-			leftson  = placeEl*2;
-			rightson = leftson+1;
+		
+		if(leftson < currentSize && elements[leftson].compareTo(elements[imax]) < 0) {
+			imax = leftson;
 		}
-	}
-	
+		if(rightson < currentSize && elements[rightson].compareTo(elements[imax]) < 0) {
+			imax = rightson;
+		}
+		if(imax != currentId) {
+			BigInteger tmp = elements[imax];
+			elements[imax] = elements[currentId];
+			elements[currentId] = tmp;
+			percolate_down(imax);
+		}
+}
+	//meme principe que tasmintree pour etre en O(n)
 	public void consIter(BigInteger[] elts) {
 		for (int i = 0; i < elts.length; i++) {
-			insert(elts[i]);
-
+			if(currentSize == capacity)
+				doubleCapacity();
+			elements[currentSize] = elts[i];
+			currentSize++;
 		}
-		
+		for (int i = currentSize/2; i > 0; i--) {
+			percolate_down(i);
+		}
 	}
 	
 	public BigInteger delMin() {
@@ -101,7 +103,7 @@ public class TasArray {
 			BigInteger root = elements[1];
 			elements[1] = elements[size()];
 			currentSize--;
-			percolate_down();
+			percolate_down(1);
 			return root;
 		}
 		return null;
@@ -130,44 +132,6 @@ public class TasArray {
 		}
 		str.append("]");
 		return str.toString();
-		/*String delimiter = "  ";
-		int tabulationLevel = (int)Math.ceil((Math.log(size())/Math.log(2)));
-		StringBuilder tree = new StringBuilder();
-		int currentLevel = 0;
-		Log2 log2 = (n) -> { return (int)(Math.log(n)/Math.log(2));};
-		
-		for (int i = 1; i < size(); i++) {
-			int k = i+1;
-			if(k == 1) {
-				for (int j = 0; j < tabulationLevel+1; j++) {
-					tree.append(delimiter);
-				}
-				tree.append(elements[i]);
-			}
-			else {
-				if(log2.calcul(k) == currentLevel) {
-					for (int j = 1; j < tabulationLevel; j++) {
-						tree.append(delimiter);
-					}
-					tree.append(elements[i]);
-					if(k == size())
-						tree.append('\n');
-				}
-				else {
-					tree.append('\n');
-					tabulationLevel--;
-					currentLevel++;
-					for (int j = 1; j < tabulationLevel+1; j++) {
-						tree.append(delimiter);
-					}
-					tree.append(elements[i]);
-					if(k == size())
-						tree.append('\n');
-				}
-			}
-				
-		}
-		return tree.toString();*/
 		
 	}
 

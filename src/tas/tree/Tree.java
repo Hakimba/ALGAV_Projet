@@ -34,9 +34,9 @@ public class Tree<E> {
 			return 0;
 		return getNbElements(root.getLeftson()) + 1 + getNbElements(root.getRightson());
 	}
-	
-	public void binaryTransform() {
-		int tmp = nbelements;
+	//représentation binaire d'un entier, dans un tableau
+	public void binaryTransform(int d) {
+		int tmp = d;
 		if(binaryRepresentation.size()>0)
 			binaryRepresentation.clear();
 		while(tmp != 0) {
@@ -44,10 +44,11 @@ public class Tree<E> {
 			binaryRepresentation.add(r);
 			tmp = (tmp-r)/2;
 		}
-		
+		System.out.println(binaryRepresentation);
 		binaryRepresentation.remove(binaryRepresentation.size()-1);
 	}
 	
+	//les deux parcours de base d'un arbre pour facilité les test et débbug
 	
 	public void infix() {
 		infix(root);

@@ -11,6 +11,13 @@ public class Node<E> {
 		setFather(null);
 	}
 	
+	public Node(E el) {
+		setElement(el);
+		setLeftson(null);
+		setRightson(null);
+		setFather(null);
+	}
+	
 	public Node(Node<E> fath,E el, Node<E> left, Node<E> right) {
 		setElement(el);
 		setLeftson(left);

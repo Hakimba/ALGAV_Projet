@@ -1,40 +1,95 @@
 package tas.tree;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
-public class TasMinTree<E extends Comparable<E>> extends Tree<E> {
+public class TasMinTree extends Tree<BigInteger> {
 	
-	private E lastEl;
+	private Node<BigInteger> lastEl;
 	
 	public TasMinTree() {
 		// TODO Auto-generated constructor stub
 		super();
 	}
 	
-	public TasMinTree(Node<E> el) {
+	public TasMinTree(Node<BigInteger> el) {
 		super(el);
 	}
 	
-	public void consIter(ArrayList<E> els) {
-		for (int i = 0; i < els.size(); i++) {
-			insert(els.get(i));
+	//Algo en O(n), d'abord j'insère tout les éléments sans reflechir, et ensuite j'appel percolateDown sur l'arbre en partant des derniers père vers la racine.
+	//a la fin evidemment j'oublie pas de recalculer ma représentation binaire, et d'aller chercher le dernier élément de l'arbre pour facilité la suppression.
+	public void consIter(BigInteger[] els) {
+		for (int i = 0; i < els.length; i++) {
+			nbelements++;
+			binaryTransform(nbelements);
+			root = insert(null,root,els[i],binaryRepresentation.size()-1);
 		}
+		for (int i = getNbElements()/2; i > 0; i--) {
+			if(i == 1)
+				percolateDown(root);
+			else {
+				binaryTransform(i);
+				Node<BigInteger> t = getNode(root, binaryRepresentation.size()-1);
+				percolateDown(t);
+			}
+		}
+		binaryTransform(nbelements);
+		lastEl = getNode(root, binaryRepresentation.size()-1);
 	}
-	public void insert(E el) {
-		lastEl = el;
+	public void insert(BigInteger el) {
 		nbelements++;
-		binaryTransform();
+		binaryTransform(nbelements);
 		root = insert(null,root,el,binaryRepresentation.size()-1);
+		lastEl = getNode(root, binaryRepresentation.size()-1);
+		percolateUp(lastEl);
 		
-		//percolateUp();
 	}
-	public Node<E> insert(Node<E> father, Node<E> r, E el, int id) {
+	
+	
+	//Methode qui me sort les elements de l'arbre sous forme de liste, avec un arbre c'est chiant avec la recursion et les indices du tableau.
+	public ArrayList<BigInteger> toList() {
+		return toList(root,new ArrayList<BigInteger>());
+	}
+	private ArrayList<BigInteger> toList(Node<BigInteger> node,ArrayList<BigInteger> container) {
+		container.add(node.getElement());
+		if(node.getLeftson() != null) {
+			toList(node.getLeftson(), container);
+		}
+		if(node.getRightson() != null) {
+			toList(node.getRightson(), container);
+		}
+		return container;
+	}
+	
+	//L'union : je transforme les deux arbres en liste, puis je prend les tableau de ses listes, 
+	//que je fusionne en un seul tableau et que je balance a construction d'un troisieme arbre
+	public static TasMinTree union(TasMinTree t1,TasMinTree t2) {
+		Object[] t1arr = t1.toList().toArray(); 
+		Object[] t2arr = t2.toList().toArray();
+		BigInteger[] t3 = new BigInteger[t1arr.length+t2arr.length];
+		for (int i = 0; i < t1arr.length; i++) {
+			t3[i] = (BigInteger) t1arr[i];
+		}
+		for (int i = 0; i < t2arr.length; i++) {
+			t3[t1arr.length+i] = (BigInteger) t2arr[i];
+		}
+		TasMinTree tree = new TasMinTree();
+		tree.consIter(t3);
+		return tree;
+		
+	}
+	
+	//Tout le systeme de tas codé en arbre je l'ai basé sur une chose : la représentation binaire des élements
+	// Exemple : je veux insérer un element dans un arbre a 3 elements, je vais d'abord calculer la représentation binaire de 4 (3 + 1 le nouvel element)
+	// (je fais ça dans la classe Tree) ça me donne un tableau [0,0,1] (c'est a l'envers, normal) donc je remove le dernier element du tableau, et ça me donne
+	//le chemin a emprunté pour insérer le prochain élément.
+	public Node<BigInteger> insert(Node<BigInteger> father, Node<BigInteger> r, BigInteger el, int id) {
 		if(root == null) {
-			return new Node<E>(father,el,null,null);
+			return new Node<BigInteger>(father,el,null,null);
 		}
 		else {
 			if(r == null) {
-				return new Node<E>(father,el,null,null);
+				return new Node<BigInteger>(father,el,null,null);
 			}
 			else {
 				if(binaryRepresentation.get(id) == 0) {
@@ -43,41 +98,45 @@ public class TasMinTree<E extends Comparable<E>> extends Tree<E> {
 				else {
 					r.setRightson(insert(r,r.getRightson(),el,id-1));
 				}
-					
 			}
 		}
 		return r;
 	}
-	
-	public void setLastEl(Node<E> r,int id) {
+	//algo pour me donner le noeud de mon choix, au pire Log(n) en partant de la racine pour une feuille
+	public Node<BigInteger> getNode(Node<BigInteger> r,int id) {
 		if(id < 0) {
-			lastEl = r.getElement();
+			return r;
 		}
-		else {
-			if(binaryRepresentation.get(id) == 0) {
-				setLastEl(r.getLeftson(),id-1);
-			}
-			else if(binaryRepresentation.get(id) == 1) {
-				setLastEl(r.getRightson(),id-1);
-			}
+		if(binaryRepresentation.get(id) == 0) {
+			return getNode(r.getLeftson(),id-1);
 		}
+		else if(binaryRepresentation.get(id) == 1) {
+			return getNode(r.getRightson(),id-1);
+		}
+		return r;
 	}
-	
-	public E delMin() {
+	//d'abord je retire la racine, puis je transpose le dernier élément dans la racine, et je supprime le dernier noeud qui contenait le dernier element
+	// en appelant le deuxieme del min.
+	//a la fin, je doit toujours recalculer la représentation binaire pour avoir le prochain chemin a emprunté en cas d'insertion/suppression
+	// et je stock aussi le dernier élément de l'arbre pour facilité l'échange entre le celui ci et la racine quand je doit supprimer le minimum.
+	//percolateDown/Up sont les algos qui servent a maintenir la propriété de tas min.
+	public BigInteger delMin() {
 		if(root == null)
 			return null;
-		if(root.getElement() == lastEl)
+		if(root.getElement().compareTo(lastEl.getElement()) == 0)
 			return root.getElement();
 		
-		E tmp = root.getElement();
+		BigInteger tmp = root.getElement();
 		root = delMin(root,binaryRepresentation.size()-1);
-		root.setElement(lastEl);
+		root.setElement(lastEl.getElement());
+		System.out.println("el : "+root.getElement());
 		nbelements--;
-		binaryTransform();
-		setLastEl(root,binaryRepresentation.size()-1);
+		binaryTransform(nbelements);
+		percolateDown(root);
+		lastEl = getNode(root,binaryRepresentation.size()-1);
 		return tmp;
 	}
-	public Node<E> delMin(Node<E> r, int id) {
+	public Node<BigInteger> delMin(Node<BigInteger> r, int id) {
 			if(id >= 0) {
 				if(binaryRepresentation.get(id) == 0) {
 					r.setLeftson(delMin(r.getLeftson(),id-1));
@@ -91,11 +150,46 @@ public class TasMinTree<E extends Comparable<E>> extends Tree<E> {
 			}
 			return r;
 	}
-	
-	public void percolateUp() {
-		
+	//je me compare aux père et si il est plus grand, j'échange avec lui
+	public void percolateUp(Node<BigInteger> currentEl) {
+		if(currentEl.getFather() == null)
+			;
+		else if(currentEl.getElement().compareTo(currentEl.getFather().getElement()) < 0) {
+			BigInteger father = currentEl.getFather().getElement();
+			currentEl.getFather().setElement(currentEl.getElement());
+			currentEl.setElement(father);
+			percolateUp(currentEl.getFather());
+		}
 	}
-	public void percolateDown() {
+	//si l'un de mes fils est plus petit que moi, j'échange avec lui, si mes deux fils sont plus petit que moi, j'échange avec min(filsg,filsd)
+	public void percolateDown(Node<BigInteger> currentNode) {
+		Node<BigInteger> tmpNode = null;
+		if(currentNode.getLeftson()!= null && currentNode.getLeftson().getElement().compareTo(currentNode.getElement()) < 0) {
+			if(currentNode.getRightson()!= null && currentNode.getRightson().getElement().compareTo(currentNode.getElement()) < 0) {
+				if(currentNode.getLeftson().getElement().compareTo(currentNode.getRightson().getElement()) > 0)
+					tmpNode = currentNode.getRightson();
+				else
+					tmpNode = currentNode.getLeftson();
+			}
+			else
+				tmpNode = currentNode.getLeftson();		
+		}
+		if(currentNode.getRightson()!= null && currentNode.getRightson().getElement().compareTo(currentNode.getElement()) < 0) {
+			if(currentNode.getLeftson()!= null && currentNode.getLeftson().getElement().compareTo(currentNode.getElement()) < 0) {
+				if(currentNode.getRightson().getElement().compareTo(currentNode.getLeftson().getElement()) > 0)
+					tmpNode = currentNode.getLeftson();
+				else
+					tmpNode = currentNode.getRightson();
+			}
+			else
+				tmpNode = currentNode.getRightson();
+		}
 		
+		if(tmpNode != null) {
+			BigInteger son = tmpNode.getElement();
+			tmpNode.setElement(currentNode.getElement());
+			currentNode.setElement(son);
+			percolateDown(tmpNode);
+		}
 	}
 }
