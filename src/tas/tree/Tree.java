@@ -44,7 +44,6 @@ public class Tree<E> {
 			binaryRepresentation.add(r);
 			tmp = (tmp-r)/2;
 		}
-		System.out.println(binaryRepresentation);
 		binaryRepresentation.remove(binaryRepresentation.size()-1);
 	}
 	

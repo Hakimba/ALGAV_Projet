@@ -1,5 +1,10 @@
 package tas.array;
 
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -133,6 +138,49 @@ public class TasArray {
 		str.append("]");
 		return str.toString();
 		
+	}
+	
+	public BigInteger[] fileToArray(File file) {
+		BufferedReader reader = null;
+		BigInteger[] bgs = new BigInteger[0];
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line;
+			int cpt = 0;
+			while ((line = reader.readLine()) != null) {
+				cpt++;
+			}
+			bgs = new BigInteger[cpt];
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line;
+			int cpt = 0;
+			while ((line = reader.readLine()) != null) {
+				bgs[cpt] = new BigInteger(line.substring(2), 16);
+				cpt++;
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		return bgs;
 	}
 
 }

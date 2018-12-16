@@ -1,7 +1,12 @@
 package tas.tree;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+
 
 public class TasMinTree extends Tree<BigInteger> {
 	
@@ -60,10 +65,8 @@ public class TasMinTree extends Tree<BigInteger> {
 		}
 		return container;
 	}
-	
-	//L'union : je transforme les deux arbres en liste, puis je prend les tableau de ses listes, 
-	//que je fusionne en un seul tableau et que je balance a construction d'un troisieme arbre
-	public static TasMinTree union(TasMinTree t1,TasMinTree t2) {
+	//preparation du tas qui va contenir l'union des deux en parametre
+	public static BigInteger[] prepareTasUnion(TasMinTree t1,TasMinTree t2) {
 		Object[] t1arr = t1.toList().toArray(); 
 		Object[] t2arr = t2.toList().toArray();
 		BigInteger[] t3 = new BigInteger[t1arr.length+t2arr.length];
@@ -73,8 +76,14 @@ public class TasMinTree extends Tree<BigInteger> {
 		for (int i = 0; i < t2arr.length; i++) {
 			t3[t1arr.length+i] = (BigInteger) t2arr[i];
 		}
+		return t3;
+	}
+	
+	//L'union : je transforme les deux arbres en liste, puis je prend les tableau de ses listes, 
+	//que je fusionne en un seul tableau et que je balance a construction d'un troisieme arbre
+	public static TasMinTree union(BigInteger[] b) {
 		TasMinTree tree = new TasMinTree();
-		tree.consIter(t3);
+		tree.consIter(b);
 		return tree;
 		
 	}
@@ -191,5 +200,46 @@ public class TasMinTree extends Tree<BigInteger> {
 			currentNode.setElement(son);
 			percolateDown(tmpNode);
 		}
+	}
+	
+	public BigInteger[] fileToArray(File file) {
+		BufferedReader reader = null;
+		BigInteger[] bgs = new BigInteger[0];
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line;
+			int cpt = 0;
+			while ((line = reader.readLine()) != null) {
+				cpt++;
+			}
+			bgs = new BigInteger[cpt];
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line;
+			int cpt = 0;
+			while ((line = reader.readLine()) != null) {
+				bgs[cpt] = new BigInteger(line.substring(2), 16);
+				cpt++;
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return bgs;
 	}
 }
