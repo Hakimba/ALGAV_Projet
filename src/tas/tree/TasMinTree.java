@@ -138,7 +138,6 @@ public class TasMinTree extends Tree<BigInteger> {
 		BigInteger tmp = root.getElement();
 		root = delMin(root,binaryRepresentation.size()-1);
 		root.setElement(lastEl.getElement());
-		System.out.println("el : "+root.getElement());
 		nbelements--;
 		binaryTransform(nbelements);
 		percolateDown(root);

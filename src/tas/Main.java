@@ -1,8 +1,9 @@
 package tas;
 
 
+import java.io.BufferedReader;
 import java.io.File;
-
+import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 
@@ -17,6 +18,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import arbrerecherche.SearchTree;
 import filebinomial.FileBinomiale;
 import tas.array.TasArray;
 
@@ -288,7 +290,11 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		/*TasMinTree heap = new TasMinTree();
+		//JEU DE TEST POUR L'IMPLEMENTATION DES TAS AVEC ARBRE
+		
+		//CONSTRUCTION ET UNION
+		/*System.out.println("TAS MIN AVEC ARBRE\n");
+		TasMinTree heap = new TasMinTree();
 		TasMinTree heap2 = new TasMinTree();
 		
 		BigInteger k1 = new BigInteger("0x9c1f03a0d9cf510f2765bd0f226ff5dc".substring(2),16);
@@ -298,72 +304,94 @@ public class Main {
 		BigInteger k5 = new BigInteger("0x34c63c08abab99722b945e57081288e7".substring(2),16);
 		BigInteger k6 = new BigInteger("0x6d481adc2aeed025f0374a5982b5c23c".substring(2),16);
 		
+		//de la plus petite clé a la plus grande
+		System.out.println("Données testées\n");
+		System.out.println("clé de la plus petite a la plus grande\n");
 		System.out.println(k2);
 		System.out.println(k3);
 		System.out.println(k5);
+		System.out.println(k6);
 		System.out.println(k4);
 		System.out.println(k1);
+		System.out.println("\n");
 		
-		System.out.println("\n ajout de k1 et k2 ");
 		heap.consIter(new BigInteger[] {k1,k2});
+		System.out.println("AFFICHAGE PREFIX DE HEAP\n");
 		heap.prefix();
-		System.out.println("\n ajout de k3 k4 k5");
+		System.out.println("\n");
+		
 		heap.consIter(new BigInteger[] {k3,k4});
-		heap2.consIter(new BigInteger[] {k5,k6});
-		System.out.println("heap 1 : ");
+		System.out.println("AFFICHAGE PREFIX DE HEAP\n");
 		heap.prefix();
-		System.out.println("\nheap2 : ");
+		System.out.println("\n");
+		
+		heap2.consIter(new BigInteger[] {k5,k6});
+		System.out.println("AFFICHAGE PREFIX DE HEAP 2\n");
 		heap2.prefix();
 		System.out.println("\n");
-		(TasMinTree.union(heap, heap2)).prefix();
-		heap.binaryTransform(4);*/
 		
+		System.out.println("AFFICHAGE PREFIX DE L'UNION DE HEAP ET HEAP 2\n");
+		(TasMinTree.union(TasMinTree.prepareTasUnion(heap, heap2))).prefix();
+		System.out.println("------------------");
+
+		//SUPPRESSION DU MINIMUM
 		
-		//System.out.println("NB : "+heap.getNbElements());
+		System.out.println("Etat de heap avant suppression\n");
+		heap.prefix();
 		
-		//System.out.println("après del min : "+heap.delMin());
+		System.out.println("\nSuppression du minimum de heap : "+heap.delMin()+"\n");
 		
+		System.out.println("Etat de heap après cette suppression\n");
+		heap.prefix();
+		*/
 		
+		/*System.out.println("----------------------------------------------\n");
+		System.out.println("TAS MIN AVEC TABLEAU\n");
+		//JEU DE TEST POUR L'IMPLEMENTATION DES TAS AVEC TABLEAU
 		
-		//System.out.println(heap.root.getLeftson().getElement());
-		//System.out.println(heap.root.getRightson().getElement());
-		 //Test du tas array
-		/*TasArray tas = new TasArray(4);
+		TasArray tas = new TasArray(4);
 		TasArray tas2 = new TasArray(4);
 		
 		//Affichage du tas array en arbre
-		BigInteger k1 = new BigInteger("0x9c1f03a0d9cf510f2765bd0f226ff5dc".substring(2),16);
-		BigInteger k2 = new BigInteger("0x10fd1015413104a2f26018d0ab77a727".substring(2),16);
-		BigInteger k3 = new BigInteger("0x2e73d8ce4bd45923286e966bc8cf2d95".substring(2),16);
-		BigInteger k4 = new BigInteger("0x767accd0c60c603f71a68be994019c7e".substring(2),16);
-		BigInteger k5 = new BigInteger("0x34c63c08abab99722b945e57081288e7".substring(2),16);
-		BigInteger k6 = new BigInteger("0x6d481adc2aeed025f0374a5982b5c23c".substring(2),16);
-		
-		System.out.println("k1 "+k1);
-		System.out.println("k2 "+k2);
-		System.out.println("k3 "+k3);
-		System.out.println("k4 "+k4);
-		System.out.println("k5 "+k5);
-		System.out.println("k6 "+k6);
+		BigInteger p1 = new BigInteger("0x9c1f03a0d9cf510f2765bd0f226ff5dc".substring(2),16);
+		BigInteger p2 = new BigInteger("0x10fd1015413104a2f26018d0ab77a727".substring(2),16);
+		BigInteger p3 = new BigInteger("0x2e73d8ce4bd45923286e966bc8cf2d95".substring(2),16);
+		BigInteger p4 = new BigInteger("0x767accd0c60c603f71a68be994019c7e".substring(2),16);
+		BigInteger p5 = new BigInteger("0x34c63c08abab99722b945e57081288e7".substring(2),16);
+		BigInteger p6 = new BigInteger("0x6d481adc2aeed025f0374a5982b5c23c".substring(2),16);
+
+		System.out.println("Données testées");
+		System.out.println("clé de la plus petite a la plus grande\n");
+		System.out.println(p2);
+		System.out.println(p3);
+		System.out.println(p5);
+		System.out.println(p6);
+		System.out.println(p4);
+		System.out.println(p1);
+		System.out.println("\n");
 		
 		tas.consIter(new BigInteger[] {k1,k2,k3,k4});
 		tas2.consIter(new BigInteger[]{k4,k5,k6});
+		
 		System.out.println("TAS 1 -------------------");
 		System.out.println(tas);
 		System.out.println("\nTAS 2 -------------------");
 		System.out.println(tas2);
 		
-		tas.delMin();
+		System.out.println("\nETAT DE TAS1 APRES SUPPRESSION DU MINIMUM : "+tas.delMin());
 		System.out.println("TAS 1 -------------------");
 		System.out.println(tas);
-		/*TasArray tasUnifie = TasArray.union(tas, tas2);
-		System.out.println("\nTAS UNIFIÉ -------------------");
-		System.out.println(tasUnifie);
-		System.out.println(tasUnifie.capacity());
-		System.out.println(tasUnifie.size());*/
 		
-		//arbre de recherche*/
-		/*BufferedReader reader = null;
+		System.out.println("\nUNIFICATION DU TAS 1 ET 2");
+		TasArray tasUnifie = TasArray.union(tas, tas2);
+		System.out.println(tasUnifie);
+		
+		
+		//JEU DE TEST AVEC ARBRE BINAIRE DE RECHERCHE
+		System.out.println("\n------------------------------------------------------\n");
+		System.out.println("ARBRE BINAIRE DE RECHERCHE");
+		System.out.println("DONNÉES TESTÉES : data/cles_alea/jeu_1_nb_cles_100.txt\n");
+		BufferedReader reader = null;
 		SearchTree st = new SearchTree();
 
 		try {
@@ -386,9 +414,13 @@ public class Main {
 		    }
 		}
 		
+		System.out.println("NOMBRE D'ÉLEMENT DE L'ARBRE BINAIRE : ");
 		System.out.println(st.getNbElements());
+		System.out.println("\nTEST D'APPARTENANCE DE 0x5eb1d3c4446ded76df352f88b1e44179 DANS L'ARBRE : ");
 		System.out.println(st.search(new BigInteger("0x5eb1d3c4446ded76df352f88b1e44179".substring(2),16)));
-		st.prefix();*/
+		
+		*/
+		//EXPERIMENTATION ET CREATION DES GRAPHIQUE DE TEMPS POUR CONSTRUCTION ET UNION
 		
 		//construction filebinomiale 
 		FileBinomiale FB = new FileBinomiale();
@@ -420,9 +452,8 @@ public class Main {
 		Hashtable<Integer, Double> hash5 = new Hashtable<Integer, Double>(8);
 		hash4 = resultUnion(new TasMinTree());
 		creerGraphe(hash4, "Complex union tasMinTree avec un tas initial 20K clé", "ms", "les autre tas","tas_tree_union.jpg");
-				
 		
 		
 	}
-
+	
 }
