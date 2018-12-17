@@ -6,11 +6,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.util.Hashtable;
 import java.util.Set;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -25,6 +29,50 @@ import tas.array.TasArray;
 import tas.tree.TasMinTree;
 
 public class Main {
+	
+	
+	public static String[] fileToArray(File file) {
+		BufferedReader reader = null;
+		String[] bgs = new String[0];
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line;
+			int cpt = 0;
+			while ((line = reader.readLine()) != null) {
+				cpt++;
+			}
+			bgs = new String[cpt];
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line;
+			int cpt = 0;
+			while ((line = reader.readLine()) != null) {
+				bgs[cpt] = line;
+				cpt++;
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		return bgs;
+	}
 	
 	public static Hashtable<Integer, Double> resultConsIter(TasMinTree ts){
 
@@ -423,13 +471,17 @@ public class Main {
 		//EXPERIMENTATION ET CREATION DES GRAPHIQUE DE TEMPS POUR CONSTRUCTION ET UNION
 		
 		//construction filebinomiale 
-		FileBinomiale FB = new FileBinomiale();
+		/*FileBinomiale FB = new FileBinomiale();
 		Hashtable<Integer, Double> hash = new Hashtable<Integer, Double>(8);
 		hash = FB.resultConsIter();
 		FB.creerGraphe(hash);
 		
 		// A FAIRE : union filebinomiale.
-		
+		// A FAIRE : union filebinomiale.
+		FileBinomiale FB2 = new FileBinomiale();
+		//Hashtable<Integer, Double> hash2 = new Hashtable<Integer, Double>(8);
+		hash = FB2.resultUnion();
+		creerGraphe(hash, "Complexité union FileBinomiale", "ms", "Les autres files", "fileb_union.jpg");
 		
 		//construction tas min tableau
 		TasArray tasminarray = new TasArray();
@@ -452,8 +504,109 @@ public class Main {
 		Hashtable<Integer, Double> hash5 = new Hashtable<Integer, Double>(8);
 		hash4 = resultUnion(new TasMinTree());
 		creerGraphe(hash4, "Complex union tasMinTree avec un tas initial 20K clé", "ms", "les autre tas","tas_tree_union.jpg");
+		*/
 		
+		SearchTree st = new SearchTree();
+		File shakespear = new File("data/Shakespeare/");
+		File[] allWords = shakespear.listFiles();
+		MessageDigest md;
+		ArrayList<String> wordsDistinct =  new ArrayList<String>();
+		ArrayList<BigInteger> wordsDistinctBG =  new ArrayList<BigInteger>();
+		try {
+			md = MessageDigest.getInstance("MD5");
+			for (File file : allWords) {
+				int ligne = 0;
+				
+				//System.out.println(fileToArray(file).length+" "+file.getName());
+				for (String word : fileToArray(file)) {
+					ligne++;
+					md.update(word.getBytes());
+				    byte[] digest = md.digest();
+				    String myHash = DatatypeConverter
+				      .printHexBinary(digest).toUpperCase();
+				    BigInteger hash = new BigInteger(myHash,16);
+				    if(st.search(hash))
+				    	;
+				    else {
+				    	//System.out.println("Premiere occurence du mot : "+word+" dans le fichier : "+file.getName()+" ligne : "+ligne);
+				    	st.insert(new BigInteger(myHash,16));
+				    	wordsDistinct.add(word);
+				    	wordsDistinctBG.add(new BigInteger(myHash,16));
+				    }
+				}
+			}
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
+		System.out.println(st.getNbElements());
+		System.out.println(wordsDistinct.size());
+
+		BigInteger[] words = new BigInteger[wordsDistinctBG.size()];
+		for (int i = 0; i < words.length; i++) {
+			words[i] = wordsDistinctBG.get(i);
+		}
+		
+		//Comparaisons des 4 fonctions principale de tas/file binomiale
+		
+		//ConsIter
+		TasArray tas = new TasArray(words.length);
+		FileBinomiale fb = new FileBinomiale();
+		Hashtable<Integer, Double> hash = new Hashtable<Integer, Double>(8);
+		hash.put(50, 0.0);
+		hash.put(100, 0.0);
+		long time = System.currentTimeMillis();
+		tas.consIter(words);
+		time = System.currentTimeMillis() - time;
+		hash.put(50, hash.get(50)+time);
+		creerGraphe(hash, "temps d'execution ConsIter sur mot distinct shakespear", "temps", "structure", "consiter_SP_tas_array.jpg");
+		
+		//Supprmin
+		//FileBinomiale fb = new FileBinomiale();
+		hash = new Hashtable<Integer, Double>(8);
+		BigInteger[] container = new BigInteger[wordsDistinct.size()];
+		hash.put(50, 0.0);
+		hash.put(100, 0.0);
+		long time2 = System.currentTimeMillis();
+		for (int i = 0; i < wordsDistinct.size(); i++) {
+			container[i] = tas.delMin();
+		}
+		time2 = System.currentTimeMillis() - time2;
+		hash.put(50, hash.get(50)+time2);
+		creerGraphe(hash, "temps d'execution supprMin sur mot distinct shakespear", "temps", "structure", "supprmin_SP_tas_array.jpg");
+		
+		//Ajout
+		//FileBinomiale fb = new FileBinomiale();
+		hash = new Hashtable<Integer, Double>(8);
+		hash.put(50, 0.0);
+		hash.put(100, 0.0);
+		long time3 = System.currentTimeMillis();
+		for (int i = 0; i < container.length; i++) {
+			tas.insert(container[i]);
+		}
+		time3 = System.currentTimeMillis() - time3;
+		hash.put(50, hash.get(50)+time3);
+		creerGraphe(hash, "temps d'execution ajout sur mot distinct shakespear", "temps", "structure", "ajout_SP_tas_array.jpg");
+		
+		//Union (séparer le tableau des mots en deux tas et unir les deux
+		//FileBinomiale fb = new FileBinomiale();
+		TasArray tasq = new TasArray(container.length/2);
+		TasArray tasp = new TasArray(container.length/2);
+		hash = new Hashtable<Integer, Double>(8);
+		hash.put(50, 0.0);
+		hash.put(100, 0.0);
+		for (int i = 0; i < container.length/2; i++) {
+			tasq.insert(container[i]);
+		}
+		for (int i = container.length/2; i < container.length; i++) {
+			tasp.insert(container[i]);
+		}
+		long time4 = System.currentTimeMillis();
+		TasArray.union(tasq, tasp);
+		time4 = System.currentTimeMillis() - time4;
+		hash.put(50, hash.get(50)+time4);
+		creerGraphe(hash, "temps d'execution union sur mot distinct shakespear", "temps", "structure", "union_SP_tas_array.jpg");
 	}
 	
 }
